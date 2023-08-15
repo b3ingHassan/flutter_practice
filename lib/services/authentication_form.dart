@@ -124,9 +124,17 @@ class _AuthenticationFormState extends State<AuthenticationForm> {
                       _formKey.currentState!.save();
                       isLogin
                           ? AuthenticationFunctions.signIn(
-                              context, email, password)
+                              context,
+                              email,
+                              password,
+                            )
                           : AuthenticationFunctions.signUp(
-                              context, email, password);
+                              context,
+                              email,
+                              password,
+                              fname,
+                              lname,
+                            );
                     }
                   },
                   child: isLogin ? const Text("Login") : const Text("Signup"),
