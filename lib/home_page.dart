@@ -10,105 +10,126 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController titleController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
   User? currUser = FirebaseAuth.instance.currentUser;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text("Simple TODO"),
-          actions: [
-            IconButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
-              icon: const Icon(Icons.logout),
-            )
-          ],
-        ),
-        body: Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                height: 200,
-                color: Colors.grey.shade200,
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration:
-                          const InputDecoration(hintText: "enter TODO title"),
-                    ),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                          hintText: "enter TODO description"),
-                    ),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                          onPressed: () async {
-                            if (currUser != null) {
-                              await FirebaseFirestore.instance
-                                  .collection("users")
-                                  .doc(currUser!.uid)
-                                  .collection("todos")
-                                  .add(
-                                {
-                                  'title': titleController.text,
-                                  'decription': descriptionController.text,
-                                },
-                              );
-                            }
+      appBar: AppBar(
+        title: const Text("TODO App"),
+        actions: [
+          IconButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+            icon: const Icon(
+              Icons.logout,
+            ),
+          )
+        ],
+      ),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            height: 250,
+            color: Colors.grey.shade200,
+            child: Column(
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: "enter TODO title",
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: "enter TODO description",
+                  ),
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (currUser != null &&
+                          titleController.text.isNotEmpty &&
+                          descriptionController.text.isNotEmpty) {
+                        await FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(currUser!.uid)
+                            .collection("todos")
+                            .add(
+                          {
+                            'title': titleController.text,
+                            'description': descriptionController.text
                           },
-                          child: const Text("Save")),
-                    )
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(currUser!.uid)
-                          .collection("todos")
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else {
-                          final docs = snapshot.data!.docs;
-                          return ListView.builder(
-                            itemCount: docs.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return ListTile(
-                                title: Text(docs[index]['title']),
-                                subtitle: Text(docs[index]['decription']),
-                              );
-                            },
-                          );
-                        }
-                      }),
-                ),
-              )
-            ],
+                        );
+                        titleController.clear();
+                        descriptionController.clear();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text("Title and Description cannot be empty"),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text("Save"),
+                  ),
+                )
+              ],
+            ),
           ),
-        ));
+          const SizedBox(
+            height: 16,
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.grey.shade200,
+              child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("users")
+                      .doc(currUser!.uid)
+                      .collection("todos")
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      final docs = snapshot.data!.docs;
+                      return ListView.builder(
+                        itemCount: docs.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text(
+                              docs[index]['title'],
+                            ),
+                            subtitle: Text(
+                              docs[index]['description'],
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  }),
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
