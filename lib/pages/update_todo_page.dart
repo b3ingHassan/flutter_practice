@@ -22,7 +22,6 @@ class _UpdateToDoState extends State<UpdateToDo> {
 
   @override
   void initState() {
-    // TODO: implement initState
     titleController.text = widget.title;
     descriptionController.text = widget.description;
     super.initState();
@@ -34,10 +33,10 @@ class _UpdateToDoState extends State<UpdateToDo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Update TODO"),
+        title: const Text("Update TODO"),
       ),
       body: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
